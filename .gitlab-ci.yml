@@ -2,24 +2,30 @@ stages:
   - build
   - sonarqube
 
-variables:
-  IMAGE_NAME: umjoshua/demo-app
-  IMAGE_TAG: python-app-1.0
-
-build-job:
-  stage: build
-  image: gradle
-  script:
-    - gradle build
-    - ./gradlew sonarqube
-  artifacts:
-    when: on_success
-    paths:
-      - "build/"
-    expire_in: 1 days
-
-# test-job:
-#   stage: sonarqube
+# build-job:
+#   stage: build
 #   image: gradle
 #   script:
-#     - gradlew sonarqube
+#     - gradle build
+#   artifacts:
+#     when: on_success
+#     paths:
+#       - "build/"
+#     expire_in: 1 days
+
+test-job:
+  stage: sonarqube
+  image: sonarsource/sonar-scanner-cli
+  before_script:
+    - apk add --no-cache jq
+  script:
+    - sonar-scanner
+      -Dsonar.projectKey=$CI_PROJECT_PATH_SLUG
+      -Dsonar.sources=.
+      -Dsonar.java.binaries=build/classes
+      -Dsonar.host.url=$SONAR_HOST
+      -Dsonar.login=$SONAR_TOKEN
+    - sleep 50
+    - >
+      export SONAR_QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST/api/qualitygates/project_status?projectKey=umjoshua-cicd-gradle" | jq -r '.projectStatus.status');
+    - if [ "$SONAR_QUALITY_GATE_STATUS" != "OK" ]; then echo "SonarQube Quality Gate failed."; exit 1; fi

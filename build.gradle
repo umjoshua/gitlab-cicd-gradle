@@ -26,9 +26,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-sonarqube {
-    properties {
-        property 'sonar.host.url', project.properties.getOrDefault("SONAR_TOKEN","")
-        property 'sonar.login', project.properties.getOrDefault("SONAR_TOKEN","")
+if (project.hasProperty('sonarHostUrl') && project.hasProperty('sonarLogin')) {
+    sonarqube {
+        properties {
+            property 'sonar.host.url', sonarHostUrl
+            property 'sonar.login', sonarLogin
+        }
     }
 }
