@@ -1,7 +1,5 @@
 pipeline{
-    agent{
-        label "node"
-    }
+    agent any
     stages{
         stage("Sonar Quality Test"){
             agent {
@@ -21,9 +19,6 @@ pipeline{
                 always{
                     echo "========always========"
                 }
-            }
-            failure {
-                echo "=====failed===="
             }
         }
     }
