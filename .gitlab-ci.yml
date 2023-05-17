@@ -2,16 +2,16 @@ stages:
   - build
   - sonarqube
 
-# build-job:
-#   stage: build
-#   image: gradle
-#   script:
-#     - gradle build
-#   artifacts:
-#     when: on_success
-#     paths:
-#       - "build/"
-#     expire_in: 1 days
+build-job:
+  stage: build
+  image: gradle
+  script:
+    - gradle build
+  artifacts:
+    when: on_success
+    paths:
+      - "build/"
+    expire_in: 1 days
 
 test-job:
   stage: sonarqube
