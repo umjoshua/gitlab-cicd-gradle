@@ -11,7 +11,7 @@ build-job:
   image: gradle
   script:
     - gradle build
-    - gradlew sonarqube
+    - ./gradlew sonarqube
   artifacts:
     when: on_success
     paths:
