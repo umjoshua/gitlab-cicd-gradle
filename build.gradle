@@ -28,7 +28,7 @@ tasks.named('test') {
 
 sonarqube {
     properties {
-        property 'sonar.host.url', System.getenv('SONAR_HOST')
-        property 'sonar.login', System.getenv('SONAR_TOKEN')
+        property 'sonar.host.url', project.properties.getOrDefault("SONAR_TOKEN","")
+        property 'sonar.login', project.properties.getOrDefault("SONAR_TOKEN","")
     }
 }

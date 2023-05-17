@@ -1,16 +1,25 @@
 stages:
+  - build
   - sonarqube
 
 variables:
   IMAGE_NAME: umjoshua/demo-app
   IMAGE_TAG: python-app-1.0
 
-test-job:
-  stage: sonarqube
-  image: sonarsource/sonar-scanner-cli
+build-job:
+  stage: build
+  image: gradle
   script:
-    - sonar-scanner
-      -Dsonar.projectKey=$CI_PROJECT_PATH_SLUG
-      -Dsonar.sources=.
-      -Dsonar.host.url=SONAR_HOST
-      -Dsonar.login=SONAR_TOKEN
+    - gradle build
+    - gradlew sonarqube
+  artifacts:
+    when: on_success
+    paths:
+      - "build/"
+    expire_in: 1 days
+
+# test-job:
+#   stage: sonarqube
+#   image: gradle
+#   script:
+#     - gradlew sonarqube
