@@ -6,7 +6,9 @@ stages:
   - build
   - sonarqube
   - build_image
-  - datree
+  - helm-validate-and-push
+  - deploy
+
 
 # build-job:
 #   stage: build
@@ -49,10 +51,27 @@ stages:
 #     - docker build -t $IMAGE_NAME:$IMAGE_TAG .
 #     - docker push $IMAGE_NAME:$IMAGE_TAG
 
-identify_misconfigs:
-  image: node:14
-  stage: datree
+# helm-validate-and-push:
+#   image: ubuntu
+#   stage: helm-validate-and-push
+#   before_script:
+#     - apt update && apt install -y curl wget git unzip
+#     - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+#     - chmod 700 get_helm.sh && ./get_helm.sh
+#     - export DATREE_TOKEN=$DATREE_TOKEN
+#     - curl https://get.datree.io | /bin/bash
+#     - helm plugin install https://github.com/datreeio/helm-datree
+#   script:
+#     - helm datree test kubernetes/myapp
+#   after_script:
+#     - cd kubernetes/
+#     - export helmversion="$(helm show chart myapp | grep version | awk '{print $2}')"
+#     - tar -czvf  myapp-${helmversion}.tgz myapp/
+#     - curl -u admin:$NEXUS_PASS $NEXUS_HOST/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz -v
+
+deploy-to-k8s:
+  stage: deploy
+  tags:
+    - gcp-runner
   script:
-    - curl https://get.datree.io | /bin/bash
-    - ls -a
-    - datree test ./kubernetes/myapp
+    - kubectl get nodes
