@@ -1,6 +1,11 @@
+variables:
+  IMAGE_NAME: umjoshua/cicd-gradle
+  IMAGE_TAG: ${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}
+
 stages:
   - build
   - sonarqube
+  - build_image
 
 build-job:
   stage: build
@@ -29,3 +34,16 @@ test-job:
     - >
       export SONAR_QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST/api/qualitygates/project_status?projectKey=umjoshua-cicd-gradle" | jq -r '.projectStatus.status');
     - if [ "$SONAR_QUALITY_GATE_STATUS" != "OK" ]; then echo "SonarQube Quality Gate failed."; exit 1; fi
+
+build-image:
+  stage: build_image
+  image: docker:24.0.0
+  services:
+    - docker:24.0.0-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG

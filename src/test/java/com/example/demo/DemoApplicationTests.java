@@ -7,7 +7,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 class DemoApplicationTests {
 
 	@Test
+	// No additional assertions needed at the moment
 	void contextLoads() {
+		// Method intentionally left empty
 	}
 
 }
