@@ -19,7 +19,6 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           command: ["/bin/sh"]
@@ -33,7 +32,6 @@ spec:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 3
@@ -42,7 +40,6 @@ spec:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 3
