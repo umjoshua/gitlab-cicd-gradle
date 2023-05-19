@@ -10,46 +10,46 @@ stages:
   - deploy
 
 
-# build-job:
-#   stage: build
-#   image: gradle
-#   script:
-#     - gradle build
-#   artifacts:
-#     when: on_success
-#     paths:
-#       - "build/"
-#     expire_in: 1 days
+build-job:
+  stage: build
+  image: gradle
+  script:
+    - gradle build
+  artifacts:
+    when: on_success
+    paths:
+      - "build/"
+    expire_in: 1 days
 
-# test-job:
-#   stage: sonarqube
-#   image: sonarsource/sonar-scanner-cli
-#   before_script:
-#     - apk add --no-cache jq
-#   script:
-#     - sonar-scanner
-#       -Dsonar.projectKey=$CI_PROJECT_PATH_SLUG
-#       -Dsonar.sources=.
-#       -Dsonar.java.binaries=build/classes
-#       -Dsonar.host.url=$SONAR_HOST
-#       -Dsonar.login=$SONAR_TOKEN
-#     - sleep 50
-#     - >
-#       export SONAR_QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST/api/qualitygates/project_status?projectKey=umjoshua-cicd-gradle" | jq -r '.projectStatus.status');
-#     - if [ "$SONAR_QUALITY_GATE_STATUS" != "OK" ]; then echo "SonarQube Quality Gate failed."; exit 1; fi
+test-job:
+  stage: sonarqube
+  image: sonarsource/sonar-scanner-cli
+  before_script:
+    - apk add --no-cache jq
+  script:
+    - sonar-scanner
+      -Dsonar.projectKey=$CI_PROJECT_PATH_SLUG
+      -Dsonar.sources=.
+      -Dsonar.java.binaries=build/classes
+      -Dsonar.host.url=$SONAR_HOST
+      -Dsonar.login=$SONAR_TOKEN
+    - sleep 50
+    - >
+      export SONAR_QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST/api/qualitygates/project_status?projectKey=umjoshua-cicd-gradle" | jq -r '.projectStatus.status');
+    - if [ "$SONAR_QUALITY_GATE_STATUS" != "OK" ]; then echo "SonarQube Quality Gate failed."; exit 1; fi
 
-# build-image:
-#   stage: build_image
-#   image: docker:24.0.0
-#   services:
-#     - docker:24.0.0-dind
-#   variables:
-#     DOCKER_TLS_CERTDIR: "/certs"
-#   before_script:
-#     - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
-#   script:
-#     - docker build -t $IMAGE_NAME:$IMAGE_TAG .
-#     - docker push $IMAGE_NAME:$IMAGE_TAG
+build-image:
+  stage: build_image
+  image: docker:24.0.0
+  services:
+    - docker:24.0.0-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
 
 # helm-validate-and-push:
 #   image: ubuntu
@@ -73,5 +73,7 @@ deploy-to-k8s:
   stage: deploy
   tags:
     - gcp-runner
+  before_script:
+    - export KUBECONFIG=$KUBE_CONFIG
   script:
-    - kubectl get nodes
+    - helm upgrade --install --set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG myjavaapp kubernetes/myapp/
