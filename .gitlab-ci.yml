@@ -19,7 +19,7 @@ build-job:
     when: on_success
     paths:
       - "build/"
-    expire_in: 1 days
+    expire_in: 2 days
 
 test-job:
   stage: sonarqube
